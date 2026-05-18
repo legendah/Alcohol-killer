@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f3ea">
+    <title>少喝一点点</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero" aria-labelledby="app-title">
+        <div>
+          <p class="eyebrow">今天也慢慢来</p>
+          <h1 id="app-title">少喝一点点</h1>
+          <p class="hero-copy">记录少喝、运动和少甜，照顾身体，也给家人一个安心的消息。</p>
+        </div>
+        <div class="today-badge" aria-label="今天日期">
+          <span id="weekday">今天</span>
+          <strong id="todayDate">--</strong>
+        </div>
+      </section>
+
+      <section class="panel checkin-panel" aria-labelledby="checkin-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">每日打卡</p>
+            <h2 id="checkin-title">今天喝酒了吗？</h2>
+          </div>
+          <span class="saved-state" id="savedState">未记录</span>
+        </div>
+
+        <h3 class="checkin-subtitle">饮酒</h3>
+        <div class="segmented" role="radiogroup" aria-label="今日饮酒状态">
+          <button class="choice" type="button" data-status="none" role="radio" aria-checked="false">
+            <span>没喝</span>
+            <small>身体休息了一天</small>
+          </button>
+          <button class="choice" type="button" data-status="light" role="radio" aria-checked="false">
+            <span>少量</span>
+            <small>比超量更稳一步</small>
+          </button>
+          <button class="choice" type="button" data-status="heavy" role="radio" aria-checked="false">
+            <span>超量</span>
+            <small>先照顾身体</small>
+          </button>
+        </div>
+
+        <h3 class="checkin-subtitle">运动</h3>
+        <div class="segmented" role="radiogroup" aria-label="今日运动状态">
+          <button class="choice" type="button" data-exercise="none" role="radio" aria-checked="false">
+            <span>没运动</span>
+            <small>今天先休息</small>
+          </button>
+          <button class="choice" type="button" data-exercise="light" role="radio" aria-checked="false">
+            <span>轻微活动</span>
+            <small>走走也算数</small>
+          </button>
+          <button class="choice" type="button" data-exercise="done" role="radio" aria-checked="false">
+            <span>完成运动</span>
+            <small>身体动起来了</small>
+          </button>
+        </div>
+
+        <h3 class="checkin-subtitle">甜食</h3>
+        <div class="segmented" role="radiogroup" aria-label="今日甜食状态">
+          <button class="choice" type="button" data-sugar="none" role="radio" aria-checked="false">
+            <span>没吃</span>
+            <small>血糖更稳一点</small>
+          </button>
+          <button class="choice" type="button" data-sugar="light" role="radio" aria-checked="false">
+            <span>少量</span>
+            <small>尝一点就停</small>
+          </button>
+          <button class="choice" type="button" data-sugar="heavy" role="radio" aria-checked="false">
+            <span>吃多了</span>
+            <small>下顿清淡点</small>
+          </button>
+        </div>
+
+        <label class="field-label" for="moodSelect">今天心情</label>
+        <select id="moodSelect">
+          <option value="平静">平静</option>
+          <option value="焦虑">焦虑</option>
+          <option value="烦躁">烦躁</option>
+          <option value="疲惫">疲惫</option>
+          <option value="开心">开心</option>
+          <option value="低落">低落</option>
+        </select>
+
+        <label class="field-label" for="triggerSelect">今天主要诱因</label>
+        <select id="triggerSelect">
+          <option value="没有明显诱因">没有明显诱因</option>
+          <option value="应酬">应酬</option>
+          <option value="压力">压力</option>
+          <option value="无聊">无聊</option>
+          <option value="睡不好">睡不好</option>
+          <option value="家人冲突">家人冲突</option>
+          <option value="习惯性想喝">习惯性想喝</option>
+        </select>
+
+        <button class="primary-action" id="saveCheckin" type="button">保存今天</button>
+        <p class="encouragement" id="encouragement">选一个最接近今天的状态就好，不需要完美。</p>
+      </section>
+
+      <section class="panel reminder-panel" aria-labelledby="reminder-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">家属提醒</p>
+            <h2 id="reminder-title">给家人的一句话</h2>
+          </div>
+        </div>
+        <div class="message-box" id="familyMessage" aria-live="polite">
+          保存今天后，这里会生成一段可以复制或分享给家人的温和提醒。
+        </div>
+        <div class="action-row">
+          <button class="secondary-action" id="copyMessage" type="button">复制提醒</button>
+          <button class="secondary-action" id="shareMessage" type="button">分享给家属</button>
+        </div>
+        <button class="screenshot-action" id="saveScreenshot" type="button" disabled>保存打卡截图</button>
+        <p class="tiny-note" id="copyStatus" aria-live="polite"></p>
+      </section>
+
+      <section class="stats-grid" aria-label="进度统计">
+        <article class="metric">
+          <span>连续改善</span>
+          <strong id="streakCount">0 天</strong>
+          <small>没喝或少量都算向前一步</small>
+        </article>
+        <article class="metric">
+          <span>最近 7 天</span>
+          <strong id="weekSummary">0 次记录</strong>
+          <small id="weekInsight">开始记录后会看到变化</small>
+        </article>
+        <article class="metric">
+          <span>运动打卡</span>
+          <strong id="exerciseSummary">0 天</strong>
+          <small>最近 7 天有活动的天数</small>
+        </article>
+        <article class="metric">
+          <span>少甜打卡</span>
+          <strong id="sugarSummary">0 天</strong>
+          <small>最近 7 天没吃或少量</small>
+        </article>
+      </section>
+
+      <section class="panel" aria-labelledby="calendar-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">最近 30 天</p>
+            <h2 id="calendar-title">减量日历</h2>
+          </div>
+        </div>
+        <div class="calendar-legend" aria-label="日历图例">
+          <span><i class="dot none"></i>没喝</span>
+          <span><i class="dot light"></i>少量</span>
+          <span><i class="dot heavy"></i>超量</span>
+          <span><i class="dot blank"></i>未记</span>
+        </div>
+        <div class="calendar" id="calendar"></div>
+      </section>
+
+      <section class="panel support-panel" aria-labelledby="support-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">想喝时</p>
+            <h2 id="support-title">先做一件小事</h2>
+          </div>
+        </div>
+        <div class="support-list" id="supportList">
+          <button type="button">喝一杯水</button>
+          <button type="button">散步 5 分钟</button>
+          <button type="button">给家人打电话</button>
+          <button type="button">洗个澡</button>
+          <button type="button">吃点东西</button>
+          <button type="button">延迟 10 分钟</button>
+        </div>
+        <p class="encouragement" id="supportFeedback">冲动会起伏，先撑过这一小段。</p>
+      </section>
+
+      <section class="panel" aria-labelledby="reasons-title">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">个人理由</p>
+            <h2 id="reasons-title">我为什么想少喝</h2>
+          </div>
+        </div>
+        <textarea id="reasonsInput" rows="4" maxlength="160" placeholder="例如：睡得更好、少让家人担心、身体轻松一点。"></textarea>
+        <button class="secondary-action full" id="saveReasons" type="button">保存理由</button>
+      </section>
+
+      <section class="medical-note" aria-labelledby="medical-title">
+        <h2 id="medical-title">安全提醒</h2>
+        <p>如果长期大量饮酒，不建议突然硬停。出现明显手抖、出汗、心慌、意识混乱、抽搐等情况时，请及时联系医生或急救服务。这个工具只做日常记录和支持，不能替代专业诊断或治疗。</p>
+      </section>
+
+      <button class="danger-action" id="clearData" type="button">清空本地数据</button>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
