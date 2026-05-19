@@ -24,12 +24,6 @@ const encouragements = {
   heavy: "先照顾身体和睡眠，下一次从少一点点开始就行。",
 };
 
-const supportActions = {
-  none: "可以和他一起肯定这一天的努力，简单说一句“今天身体轻松一点就好”。",
-  light: "可以准备水或清淡食物，陪他把今晚平稳过完。",
-  heavy: "先关心身体和情绪，再讨论下一步；今晚避免责备，明天一起想一个少一点的办法。",
-};
-
 const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
   month: "numeric",
   day: "numeric",
@@ -56,21 +50,12 @@ const elements = {
   triggerSelect: document.querySelector("#triggerSelect"),
   saveCheckin: document.querySelector("#saveCheckin"),
   encouragement: document.querySelector("#encouragement"),
-  familyMessage: document.querySelector("#familyMessage"),
-  copyMessage: document.querySelector("#copyMessage"),
-  shareMessage: document.querySelector("#shareMessage"),
-  saveScreenshot: document.querySelector("#saveScreenshot"),
-  copyStatus: document.querySelector("#copyStatus"),
   streakCount: document.querySelector("#streakCount"),
   weekSummary: document.querySelector("#weekSummary"),
   weekInsight: document.querySelector("#weekInsight"),
   exerciseSummary: document.querySelector("#exerciseSummary"),
   sugarSummary: document.querySelector("#sugarSummary"),
   calendar: document.querySelector("#calendar"),
-  supportList: document.querySelector("#supportList"),
-  supportFeedback: document.querySelector("#supportFeedback"),
-  reasonsInput: document.querySelector("#reasonsInput"),
-  saveReasons: document.querySelector("#saveReasons"),
   clearData: document.querySelector("#clearData"),
 };
 
@@ -91,7 +76,6 @@ function init() {
     elements.triggerSelect.value = todayRecord.trigger;
   }
 
-  elements.reasonsInput.value = state.reasons || "";
   wireEvents();
   render();
 }
@@ -122,30 +106,14 @@ function wireEvents() {
   });
 
   elements.saveCheckin.addEventListener("click", saveToday);
-  elements.copyMessage.addEventListener("click", copyReminder);
-  elements.shareMessage.addEventListener("click", shareReminder);
-  elements.saveScreenshot.addEventListener("click", saveCheckinImage);
-
-  elements.supportList.addEventListener("click", (event) => {
-    if (event.target.tagName !== "BUTTON") return;
-    elements.supportFeedback.textContent = `好，就先做这件事：${event.target.textContent}。`;
-  });
-
-  elements.saveReasons.addEventListener("click", () => {
-    state.reasons = elements.reasonsInput.value.trim();
-    persistState();
-    elements.supportFeedback.textContent = "理由已保存，想喝时可以回来看看。";
-  });
 
   elements.clearData.addEventListener("click", () => {
-    const ok = window.confirm("确定清空本机保存的打卡和理由吗？");
+    const ok = window.confirm("确定清空本机保存的打卡记录吗？");
     if (!ok) return;
     state.records = {};
-    state.reasons = "";
     selectedStatus = null;
     selectedExercise = null;
     selectedSugar = null;
-    elements.reasonsInput.value = "";
     elements.moodSelect.value = "平静";
     elements.triggerSelect.value = "没有明显诱因";
     persistState();
@@ -208,16 +176,12 @@ function renderToday() {
   if (!todayRecord) {
     elements.savedState.textContent = "未记录";
     elements.savedState.style.background = "#eee8dc";
-    elements.familyMessage.textContent = "保存今天后，这里会生成一段可以复制或分享给家人的温和提醒。";
-    elements.saveScreenshot.disabled = true;
     return;
   }
 
   elements.savedState.textContent = statusLabels[todayRecord.status];
   elements.savedState.style.background = pillColor(todayRecord.status);
   elements.encouragement.textContent = encouragements[todayRecord.status];
-  elements.familyMessage.textContent = buildFamilyMessage(todayRecord);
-  elements.saveScreenshot.disabled = false;
 }
 
 function renderStats() {
@@ -257,22 +221,6 @@ function renderCalendar() {
   });
 }
 
-function buildFamilyMessage(record) {
-  const statusText = statusLabels[record.status];
-  const exerciseText = record.exercise ? exerciseLabels[record.exercise] : "未记录运动";
-  const sugarText = record.sugar ? sugarLabels[record.sugar] : "未记录甜食";
-  const reasonText = state.reasons ? `他想少喝的理由是：${state.reasons}` : "今晚先把身体照顾好。";
-  const habitText = `运动：${exerciseText}；甜食：${sugarText}。`;
-
-  return [
-    `今天已记录：${statusText}。`,
-    habitText,
-    `今天的心情是${record.mood}，主要诱因是${record.trigger}。`,
-    supportActions[record.status],
-    reasonText,
-  ].join("\n");
-}
-
 function buildHabitEncouragement() {
   const parts = [];
   if (selectedExercise === "done") parts.push("运动完成了，身体会记住这份努力");
@@ -285,168 +233,6 @@ function buildHabitEncouragement() {
 
 function getLabel(labels, value) {
   return value ? labels[value] : "未记录";
-}
-
-async function copyReminder() {
-  const text = elements.familyMessage.textContent.trim();
-  if (!text || text.startsWith("保存今天后")) {
-    elements.copyStatus.textContent = "先保存今天，再复制提醒。";
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(text);
-    elements.copyStatus.textContent = "已复制，可以发给家人。";
-  } catch {
-    elements.copyStatus.textContent = "浏览器不允许自动复制，可以长按文字手动复制。";
-  }
-}
-
-async function shareReminder() {
-  const text = elements.familyMessage.textContent.trim();
-  if (!text || text.startsWith("保存今天后")) {
-    elements.copyStatus.textContent = "先保存今天，再分享提醒。";
-    return;
-  }
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: "今日健康打卡", text });
-      elements.copyStatus.textContent = "已打开系统分享。";
-    } catch {
-      elements.copyStatus.textContent = "分享已取消。";
-    }
-    return;
-  }
-
-  await copyReminder();
-}
-
-function saveCheckinImage() {
-  const todayRecord = state.records[toDateKey(new Date())];
-  if (!todayRecord) {
-    elements.copyStatus.textContent = "先保存今天，再保存截图。";
-    return;
-  }
-
-  const canvas = document.createElement("canvas");
-  const scale = Math.max(2, Math.floor(window.devicePixelRatio || 1));
-  const width = 760;
-  const padding = 48;
-  const imageRows = [
-    { text: "今日健康打卡", type: "title" },
-    { text: `${weekdayFormatter.format(new Date())} ${dateFormatter.format(new Date())}`, type: "meta" },
-    { text: `饮酒：${statusLabels[todayRecord.status]}`, type: getDrinkTone(todayRecord.status) },
-    { text: `运动：${getLabel(exerciseLabels, todayRecord.exercise)}`, type: getExerciseTone(todayRecord.exercise) },
-    { text: `甜食：${getLabel(sugarLabels, todayRecord.sugar)}`, type: getSugarTone(todayRecord.sugar) },
-    { text: `心情：${todayRecord.mood}`, type: "meta" },
-    { text: `诱因：${todayRecord.trigger}`, type: "meta" },
-    { text: "", type: "spacer" },
-    ...buildFamilyMessage(todayRecord).split("\n").map((text) => ({ text, type: "body" })),
-  ];
-
-  const ctx = canvas.getContext("2d");
-  ctx.font = "30px sans-serif";
-  const wrappedRows = imageRows.flatMap((row) => {
-    if (row.type === "title" || row.type === "spacer") return [row];
-    return wrapCanvasText(ctx, row.text, width - padding * 2).map((text) => ({ text, type: row.type }));
-  });
-
-  const height = padding * 2 + 72 + wrappedRows.length * 44;
-  canvas.width = width * scale;
-  canvas.height = height * scale;
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
-  ctx.scale(scale, scale);
-
-  ctx.fillStyle = "#f7f3ea";
-  ctx.fillRect(0, 0, width, height);
-  roundRect(ctx, 24, 24, width - 48, height - 48, 18, "#fffdf8", "#ded7ca");
-
-  let y = 78;
-  wrappedRows.forEach((row) => {
-    if (row.type === "title") {
-      ctx.fillStyle = getImageRowColor(row.type);
-      ctx.font = "700 42px sans-serif";
-      ctx.fillText(row.text, padding, y);
-      y += 54;
-      return;
-    }
-    if (row.type === "spacer") {
-      y += 18;
-      return;
-    }
-    ctx.fillStyle = getImageRowColor(row.type);
-    ctx.font = row.type === "body" ? "28px sans-serif" : "700 30px sans-serif";
-    ctx.fillText(row.text, padding, y);
-    y += 44;
-  });
-
-  const link = document.createElement("a");
-  link.download = `今日健康打卡-${toDateKey(new Date())}.png`;
-  link.href = canvas.toDataURL("image/png");
-  link.click();
-  elements.copyStatus.textContent = "截图已生成并保存到下载目录。";
-}
-
-function getDrinkTone(status) {
-  if (status === "none") return "positive";
-  return "negative";
-}
-
-function getExerciseTone(exercise) {
-  if (exercise === "done" || exercise === "light") return "positive";
-  if (exercise === "none") return "negative";
-  return "meta";
-}
-
-function getSugarTone(sugar) {
-  if (sugar === "none" || sugar === "light") return "positive";
-  if (sugar === "heavy") return "negative";
-  return "meta";
-}
-
-function getImageRowColor(type) {
-  if (type === "positive") return "#2f7a58";
-  if (type === "negative") return "#a84f42";
-  if (type === "meta") return "#3b6a8f";
-  if (type === "body") return "#39342e";
-  return "#232323";
-}
-
-function wrapCanvasText(ctx, text, maxWidth) {
-  const lines = [];
-  let current = "";
-  for (const char of text) {
-    const next = current + char;
-    if (ctx.measureText(next).width > maxWidth && current) {
-      lines.push(current);
-      current = char;
-    } else {
-      current = next;
-    }
-  }
-  if (current) lines.push(current);
-  return lines;
-}
-
-function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-  ctx.fillStyle = fill;
-  ctx.fill();
-  ctx.strokeStyle = stroke;
-  ctx.lineWidth = 2;
-  ctx.stroke();
 }
 
 function getImprovementStreak() {

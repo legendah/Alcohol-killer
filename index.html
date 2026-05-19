@@ -13,7 +13,7 @@
         <div>
           <p class="eyebrow">今天也慢慢来</p>
           <h1 id="app-title">少喝一点点</h1>
-          <p class="hero-copy">记录少喝、运动和少甜，照顾身体，也给家人一个安心的消息。</p>
+          <p class="hero-copy">每天点几下，记录少喝、运动和少甜。</p>
         </div>
         <div class="today-badge" aria-label="今天日期">
           <span id="weekday">今天</span>
@@ -103,24 +103,6 @@
         <p class="encouragement" id="encouragement">选一个最接近今天的状态就好，不需要完美。</p>
       </section>
 
-      <section class="panel reminder-panel" aria-labelledby="reminder-title">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">家属提醒</p>
-            <h2 id="reminder-title">给家人的一句话</h2>
-          </div>
-        </div>
-        <div class="message-box" id="familyMessage" aria-live="polite">
-          保存今天后，这里会生成一段可以复制或分享给家人的温和提醒。
-        </div>
-        <div class="action-row">
-          <button class="secondary-action" id="copyMessage" type="button">复制提醒</button>
-          <button class="secondary-action" id="shareMessage" type="button">分享给家属</button>
-        </div>
-        <button class="screenshot-action" id="saveScreenshot" type="button" disabled>保存打卡截图</button>
-        <p class="tiny-note" id="copyStatus" aria-live="polite"></p>
-      </section>
-
       <section class="stats-grid" aria-label="进度统计">
         <article class="metric">
           <span>连续改善</span>
@@ -158,35 +140,6 @@
           <span><i class="dot blank"></i>未记</span>
         </div>
         <div class="calendar" id="calendar"></div>
-      </section>
-
-      <section class="panel support-panel" aria-labelledby="support-title">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">想喝时</p>
-            <h2 id="support-title">先做一件小事</h2>
-          </div>
-        </div>
-        <div class="support-list" id="supportList">
-          <button type="button">喝一杯水</button>
-          <button type="button">散步 5 分钟</button>
-          <button type="button">给家人打电话</button>
-          <button type="button">洗个澡</button>
-          <button type="button">吃点东西</button>
-          <button type="button">延迟 10 分钟</button>
-        </div>
-        <p class="encouragement" id="supportFeedback">冲动会起伏，先撑过这一小段。</p>
-      </section>
-
-      <section class="panel" aria-labelledby="reasons-title">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">个人理由</p>
-            <h2 id="reasons-title">我为什么想少喝</h2>
-          </div>
-        </div>
-        <textarea id="reasonsInput" rows="4" maxlength="160" placeholder="例如：睡得更好、少让家人担心、身体轻松一点。"></textarea>
-        <button class="secondary-action full" id="saveReasons" type="button">保存理由</button>
       </section>
 
       <section class="medical-note" aria-labelledby="medical-title">
