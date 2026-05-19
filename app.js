@@ -49,6 +49,7 @@ const elements = {
   moodSelect: document.querySelector("#moodSelect"),
   triggerSelect: document.querySelector("#triggerSelect"),
   saveCheckin: document.querySelector("#saveCheckin"),
+  saveScreenshot: document.querySelector("#saveScreenshot"),
   encouragement: document.querySelector("#encouragement"),
   streakCount: document.querySelector("#streakCount"),
   weekSummary: document.querySelector("#weekSummary"),
@@ -106,6 +107,7 @@ function wireEvents() {
   });
 
   elements.saveCheckin.addEventListener("click", saveToday);
+  elements.saveScreenshot.addEventListener("click", saveCheckinImage);
 
   elements.clearData.addEventListener("click", () => {
     const ok = window.confirm("确定清空本机保存的打卡记录吗？");
@@ -176,12 +178,14 @@ function renderToday() {
   if (!todayRecord) {
     elements.savedState.textContent = "未记录";
     elements.savedState.style.background = "#eee8dc";
+    elements.saveScreenshot.disabled = true;
     return;
   }
 
   elements.savedState.textContent = statusLabels[todayRecord.status];
   elements.savedState.style.background = pillColor(todayRecord.status);
   elements.encouragement.textContent = encouragements[todayRecord.status];
+  elements.saveScreenshot.disabled = false;
 }
 
 function renderStats() {
@@ -233,6 +237,126 @@ function buildHabitEncouragement() {
 
 function getLabel(labels, value) {
   return value ? labels[value] : "未记录";
+}
+
+function saveCheckinImage() {
+  const todayRecord = state.records[toDateKey(new Date())];
+  if (!todayRecord) {
+    elements.encouragement.textContent = "先保存今天，再保存截图。";
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  const scale = Math.max(2, Math.floor(window.devicePixelRatio || 1));
+  const width = 760;
+  const padding = 48;
+  const imageRows = [
+    { text: "今日健康打卡", type: "title" },
+    { text: `${weekdayFormatter.format(new Date())} ${dateFormatter.format(new Date())}`, type: "meta" },
+    { text: `饮酒：${statusLabels[todayRecord.status]}`, type: getDrinkTone(todayRecord.status) },
+    { text: `运动：${getLabel(exerciseLabels, todayRecord.exercise)}`, type: getExerciseTone(todayRecord.exercise) },
+    { text: `甜食：${getLabel(sugarLabels, todayRecord.sugar)}`, type: getSugarTone(todayRecord.sugar) },
+    { text: `心情：${todayRecord.mood}`, type: "meta" },
+    { text: `诱因：${todayRecord.trigger}`, type: "meta" },
+  ];
+
+  const ctx = canvas.getContext("2d");
+  ctx.font = "30px sans-serif";
+  const wrappedRows = imageRows.flatMap((row) => {
+    if (row.type === "title") return [row];
+    return wrapCanvasText(ctx, row.text, width - padding * 2).map((text) => ({ text, type: row.type }));
+  });
+
+  const height = padding * 2 + 72 + wrappedRows.length * 48;
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  ctx.scale(scale, scale);
+
+  ctx.fillStyle = "#f7f3ea";
+  ctx.fillRect(0, 0, width, height);
+  roundRect(ctx, 24, 24, width - 48, height - 48, 18, "#fffdf8", "#ded7ca");
+
+  let y = 78;
+  wrappedRows.forEach((row) => {
+    if (row.type === "title") {
+      ctx.fillStyle = getImageRowColor(row.type);
+      ctx.font = "700 42px sans-serif";
+      ctx.fillText(row.text, padding, y);
+      y += 58;
+      return;
+    }
+    ctx.fillStyle = getImageRowColor(row.type);
+    ctx.font = "700 30px sans-serif";
+    ctx.fillText(row.text, padding, y);
+    y += 48;
+  });
+
+  const link = document.createElement("a");
+  link.download = `今日健康打卡-${toDateKey(new Date())}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+  elements.encouragement.textContent = "截图已生成并保存到下载目录。";
+}
+
+function getDrinkTone(status) {
+  if (status === "none") return "positive";
+  return "negative";
+}
+
+function getExerciseTone(exercise) {
+  if (exercise === "done" || exercise === "light") return "positive";
+  if (exercise === "none") return "negative";
+  return "meta";
+}
+
+function getSugarTone(sugar) {
+  if (sugar === "none" || sugar === "light") return "positive";
+  if (sugar === "heavy") return "negative";
+  return "meta";
+}
+
+function getImageRowColor(type) {
+  if (type === "positive") return "#2f7a58";
+  if (type === "negative") return "#a84f42";
+  if (type === "meta") return "#3b6a8f";
+  return "#232323";
+}
+
+function wrapCanvasText(ctx, text, maxWidth) {
+  const lines = [];
+  let current = "";
+  for (const char of text) {
+    const next = current + char;
+    if (ctx.measureText(next).width > maxWidth && current) {
+      lines.push(current);
+      current = char;
+    } else {
+      current = next;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = 2;
+  ctx.stroke();
 }
 
 function getImprovementStreak() {

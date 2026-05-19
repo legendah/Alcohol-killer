@@ -244,6 +244,7 @@ select {
 }
 
 .primary-action,
+.screenshot-action,
 .danger-action {
   border: 0;
   border-radius: 8px;
@@ -256,6 +257,20 @@ select {
   margin-top: 16px;
   background: var(--green);
   color: #fff;
+}
+
+.screenshot-action {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 10px;
+  background: var(--blue);
+  color: #fff;
+}
+
+.screenshot-action:disabled {
+  cursor: not-allowed;
+  background: #c8d2dc;
+  color: #f7fbff;
 }
 
 .danger-action {
